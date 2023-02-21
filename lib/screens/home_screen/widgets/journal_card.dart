@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webapi_first_course/helpers/weekday.dart';
 import 'package:flutter_webapi_first_course/models/journal.dart';
+import 'package:uuid/uuid.dart';
 
 class JournalCard extends StatelessWidget {
   final Journal? journal;
   final DateTime showedDate;
-  const JournalCard({Key? key, this.journal, required this.showedDate})
+  final Function refreshFuntion;
+  const JournalCard(
+      {Key? key,
+      this.journal,
+      required this.showedDate,
+      required this.refreshFuntion})
       : super(key: key);
 
   @override
@@ -54,7 +60,7 @@ class JournalCard extends StatelessWidget {
                       ),
                     ),
                     padding: const EdgeInsets.all(8),
-                    child: Text(WeekDay(journal!.createdAt.weekday).short),
+                    child: Text(WeekDay(journal!.createdAt).short),
                   ),
                 ],
               ),
@@ -79,17 +85,47 @@ class JournalCard extends StatelessWidget {
       );
     } else {
       return InkWell(
-        onTap: () {},
+        onTap: () {
+          callAddJournalScreen(context);
+        },
         child: Container(
           height: 115,
           alignment: Alignment.center,
           child: Text(
-            "${WeekDay(showedDate.weekday).short} - ${showedDate.day}",
+            "${WeekDay(showedDate).short} - ${showedDate.day}",
             style: const TextStyle(fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ),
       );
     }
+  }
+
+  callAddJournalScreen(BuildContext context) {
+    Navigator.pushNamed(
+      context,
+      "add-journal",
+      arguments: Journal(
+        id: const Uuid().v1(),
+        content: "",
+        createdAt: showedDate,
+        updatedAt: showedDate,
+      ),
+    ).then((value) {
+      refreshFuntion();
+      if (value != null && value == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Cadastro concluido!"),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text("Houve uma falha ao cadastrar."),
+          ),
+        );
+      }
+    });
   }
 }
