@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_webapi_first_course/database/database.dart';
 import 'package:flutter_webapi_first_course/screens/home_screen/widgets/home_screen_list.dart';
+import 'package:flutter_webapi_first_course/services/journal_service.dart';
 
 import '../../models/journal.dart';
 
@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Map<String, Journal> database = {};
 
   final ScrollController _listScrollController = ScrollController();
+  final JournalService _journalService = JournalService();
 
   @override
   void initState() {
@@ -37,10 +38,19 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(
           "${currentDay.day}  |  ${currentDay.month}  |  ${currentDay.year}",
         ),
+        actions: [
+          IconButton(
+            onPressed: () {
+              refresh();
+            },
+            icon: const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: ListView(
         controller: _listScrollController,
         children: generateListJournalCards(
+          refreshFonction: refresh,
           windowPage: windowPage,
           currentDay: currentDay,
           database: database,
@@ -49,9 +59,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void refresh() {
+  void refresh() async {
+    List<Journal> listJournal = await _journalService.getAll();
     setState(() {
-      database = generateRandomDatabase(maxGap: windowPage, amount: 3);
+      database = {};
+      for (Journal journal in listJournal) {
+        database[journal.id] = journal;
+      }
     });
   }
 }
