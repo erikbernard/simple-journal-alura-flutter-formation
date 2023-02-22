@@ -1,4 +1,11 @@
 {
+  "users": [
+    {
+      "email": "erik@gmail.com",
+      "password": "$2a$10$xeI3UOQqS5CPAe8o6oSdreh3tDuztXDhTHAA6AH.0Y4y2AOkW1zN.",
+      "id": 1
+    }
+  ],
   "learnhttp": {},
   "journals": [
     {
