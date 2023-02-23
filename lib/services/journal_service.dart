@@ -29,8 +29,12 @@ class JournalService {
     return false;
   }
 
-  Future<List<Journal>> getAll() async {
-    http.Response response = await client.get(Uri.parse(getURL()));
+  Future<List<Journal>> getAll(
+      {required String id, required String token}) async {
+    http.Response response = await client.get(
+      Uri.parse("${url}users/$id/journals"),
+      headers: {"Authorization": "Bearer $token"},
+    );
     if (response.statusCode != 200) {
       throw Exception();
     }

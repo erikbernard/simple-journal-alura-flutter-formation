@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webapi_first_course/screens/home_screen/widgets/home_screen_list.dart';
 import 'package:flutter_webapi_first_course/services/journal_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/journal.dart';
 
@@ -60,11 +61,21 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void refresh() async {
-    List<Journal> listJournal = await _journalService.getAll();
-    setState(() {
-      database = {};
-      for (Journal journal in listJournal) {
-        database[journal.id] = journal;
+    SharedPreferences.getInstance().then((shared) {
+      String? token = shared.getString("accessToken");
+      String? email = shared.getString("email");
+      int? id = shared.getInt("id");
+      if (token != null && email != null && id != null) {
+        _journalService
+            .getAll(id: id.toString(), token: token)
+            .then((List<Journal> listJournal) {
+          setState(() {
+            database = {};
+            for (Journal journal in listJournal) {
+              database[journal.id] = journal;
+            }
+          });
+        });
       }
     });
   }
