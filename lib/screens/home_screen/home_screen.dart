@@ -24,6 +24,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final ScrollController _listScrollController = ScrollController();
   final JournalService _journalService = JournalService();
+  int? userId;
+  String? userToken;
 
   @override
   void initState() {
@@ -48,15 +50,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      body: ListView(
-        controller: _listScrollController,
-        children: generateListJournalCards(
-          refreshFonction: refresh,
-          windowPage: windowPage,
-          currentDay: currentDay,
-          database: database,
-        ),
-      ),
+      body: (userId != null && userToken != null)
+          ? ListView(
+              controller: _listScrollController,
+              children: generateListJournalCards(
+                refreshFonction: refresh,
+                windowPage: windowPage,
+                currentDay: currentDay,
+                database: database,
+                userId: userId!,
+                token: userToken!,
+              ),
+            )
+          : const Center(
+              child: CircularProgressIndicator(),
+            ),
     );
   }
 
@@ -66,6 +74,10 @@ class _HomeScreenState extends State<HomeScreen> {
       String? email = shared.getString("email");
       int? id = shared.getInt("id");
       if (token != null && email != null && id != null) {
+        setState(() {
+          userId = userId;
+          userToken = token;
+        });
         _journalService
             .getAll(id: id.toString(), token: token)
             .then((List<Journal> listJournal) {

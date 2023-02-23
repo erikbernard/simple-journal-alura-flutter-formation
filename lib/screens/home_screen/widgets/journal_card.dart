@@ -9,11 +9,15 @@ class JournalCard extends StatelessWidget {
   final Journal? journal;
   final DateTime showedDate;
   final Function refreshFuntion;
+  final int userId;
+  final String token;
   const JournalCard(
       {Key? key,
       this.journal,
       required this.showedDate,
-      required this.refreshFuntion})
+      required this.refreshFuntion,
+      required this.userId,
+      required this.token})
       : super(key: key);
 
   @override
@@ -118,11 +122,11 @@ class JournalCard extends StatelessWidget {
 
   callAddJournalScreen(BuildContext context, {Journal? journal}) {
     Journal innerJournal = Journal(
-      id: const Uuid().v1(),
-      content: "",
-      createdAt: showedDate,
-      updatedAt: showedDate,
-    );
+        id: const Uuid().v1(),
+        content: "",
+        createdAt: showedDate,
+        updatedAt: showedDate,
+        userId: userId);
     Map<String, dynamic> map = {};
     if (journal != null) {
       innerJournal = journal;
@@ -165,7 +169,7 @@ class JournalCard extends StatelessWidget {
         if (value) {
           JournalService service = JournalService();
           if (journal != null) {
-            service.delete(journal!.id).then(
+            service.delete(journal!.id, token).then(
               (value) {
                 if (value) {
                   ScaffoldMessenger.of(context).showSnackBar(
