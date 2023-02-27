@@ -1,5 +1,9 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_webapi_first_course/screens/commom/confirmation_dialog.dart';
+import 'package:flutter_webapi_first_course/screens/commom/exception_dialog.dart';
 import 'package:flutter_webapi_first_course/services/auth_service.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -7,8 +11,7 @@ class LoginScreen extends StatelessWidget {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-  AuthService service = AuthService();
+  final AuthService service = AuthService();
 
   @override
   Widget build(BuildContext context) {
@@ -68,37 +71,43 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  login(BuildContext context) async {
+  void login(BuildContext context) async {
     String email = _emailController.text;
     String password = _passwordController.text;
-    try {
-      service
-          .login(
-              email: _emailController.text, password: _passwordController.text)
-          .then((isLogin) {
+    service.login(email: email, password: password).then(
+      (isLogin) {
         if (isLogin) {
           Navigator.pushReplacementNamed(context, "home");
         }
-      }).catchError((e) {
-        showConfirmationDialog(
-          context,
-          content:
-              "Desejar criar um novo usuário usando o e-mail $email e a senha inserida?",
-          affirmativeOption: "criar",
-        ).then((value) {
+      },
+    ).catchError((error) {
+      var innerError = error as HttpException;
+      showExceptionDialog(context, content: innerError.message);
+    }, test: (error) => error is HttpException).catchError((error) {
+      showConfirmationDialog(
+        context,
+        content:
+            "Desejar criar um novo usuário usando o e-mail $email e a senha inserida?",
+        affirmativeOption: "criar",
+      ).then(
+        (value) {
           if (value != null && value) {
-            service
-                .register(
-                    email: _emailController.text,
-                    password: _passwordController.text)
-                .then((isRegister) {
-              if (isRegister) {
-                Navigator.pushReplacementNamed(context, "home");
-              }
-            });
+            service.register(email: email, password: password).then(
+              (isRegister) {
+                if (isRegister) {
+                  Navigator.pushReplacementNamed(context, "home");
+                }
+              },
+            );
           }
-        });
-      });
-    } on UserNotFoundException {}
+        },
+      );
+    }, test: ((error) => error is UserNotFoundException)).catchError(
+      (error) {
+        showExceptionDialog(context,
+            content: "Sem resposta do servidor, aguarde para tenta novamente!");
+      },
+      test: (error) => error is TimeoutException,
+    );
   }
 }
